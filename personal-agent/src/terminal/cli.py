@@ -222,10 +222,12 @@ async def run_interactive(user_id: str, user_name: str, data_dir: str):
     """
     load_dotenv()
 
-    # Configure logging
-    logging.basicConfig(
-        level=getattr(logging, settings.log_level),
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    # Configure logging with clean output
+    from config.logging_config import setup_logging
+    setup_logging(
+        level=settings.log_level,
+        verbose=False,  # Clean output without timestamps
+        log_file=settings.log_file
     )
 
     # Create LLM

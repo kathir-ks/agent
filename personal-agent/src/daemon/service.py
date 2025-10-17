@@ -15,11 +15,8 @@ from dotenv import load_dotenv
 from ..llm import LLMFactory
 from ..agent import AgentBrain, UserProfile
 from config.settings import settings
+from config.logging_config import setup_logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
 
 
@@ -209,10 +206,10 @@ class DaemonService:
 @click.option('--user-id', default='default', help='User ID')
 @click.option('--data-dir', default='./data', help='Data directory')
 @click.option('--check-interval', default=30, help='Check interval in minutes')
-@click.option('--log-level', default='INFO', help='Log level')
+@click.option('--log-level', default='WARNING', help='Log level')
 def main(user_id, data_dir, check_interval, log_level):
     """Start the personal agent daemon service."""
-    logging.getLogger().setLevel(getattr(logging, log_level.upper()))
+    setup_logging(level=log_level, verbose=False)
 
     daemon = DaemonService(
         user_id=user_id,

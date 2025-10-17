@@ -19,8 +19,9 @@ from config.settings import settings
 # Load environment
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging with centralized config
+from config.logging_config import setup_logging
+setup_logging(level="WARNING", verbose=False)
 logger = logging.getLogger(__name__)
 
 # Global state (in production, use proper state management)
