@@ -1,0 +1,29 @@
+# Systemd service file for Personal Agent daemon
+# Copy to /etc/systemd/system/personal-agent.service
+#
+# Installation:
+#   sudo cp scripts/personal-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable personal-agent
+#   sudo systemctl start personal-agent
+#
+# View logs:
+#   sudo journalctl -u personal-agent -f
+
+[Unit]
+Description=Personal Agent Background Service
+After=network.target
+
+[Service]
+Type=simple
+User=kathirks_gc
+WorkingDirectory=/home/kathirks_gc/agent/personal-agent
+Environment="PATH=/usr/bin:/usr/local/bin"
+ExecStart=/usr/bin/python3 -m src.daemon.service --user-id=default --data-dir=/home/kathirks_gc/agent/personal-agent/data
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

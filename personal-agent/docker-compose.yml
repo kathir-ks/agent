@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Redis service for background task management
+  redis:
+    image: redis:7-alpine
+    container_name: personal-agent-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - personal-agent-network
+
+  # Personal Agent web application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: personal-agent-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist user data and profiles
+      - ./data:/app/data
+      # Persist database
+      - ./personal_agent.db:/app/personal_agent.db
+    environment:
+      # Load from .env file or set here
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gemini-flash-2/0}
+      - TEMPERATURE=${TEMPERATURE:-0.7}
+      - MAX_TOKENS=${MAX_TOKENS:-2048}
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=8000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - DATABASE_URL=sqlite+aiosqlite:///./personal_agent.db
+      - AGENT_NAME=${AGENT_NAME:-Personal Agent}
+      - CHECK_INTERVAL_MINUTES=${CHECK_INTERVAL_MINUTES:-30}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/status/default')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - personal-agent-network
+
+networks:
+  personal-agent-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
