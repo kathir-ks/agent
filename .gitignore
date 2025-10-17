@@ -1,0 +1,5 @@
+**.env
+**.env.local
+
+# remove pycaches
+**__pycache__**
